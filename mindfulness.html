@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <title>Minfulness game</title>
+    <title>Mindfulness game</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
     <style type="text/css">
         body {
@@ -44,6 +44,10 @@
 
     let points = 0;
     let infoText;
+
+    let flyingThought;
+
+    
 
 
     function preload ()
@@ -114,13 +118,17 @@
 
         cursors = this.input.keyboard.createCursorKeys();
 
+
+
         //ajatuspilvi-kone
 
         cloudmachine = this.physics.add.sprite(460, 349, 'cloudmachine');
         cloudmachine.setImmovable(true);
         cloudmachine.body.allowGravity = false;
 
-        this.physics.add.collider(cloudmachine, entity);
+        this.physics.add.collider(entity, cloudmachine, useCloudMachine, null, this);
+
+        
 
         //jääkaappi
 
@@ -154,6 +162,62 @@
     
     }
 
+    //ajatuspilvi-koneen käyttö
+
+    function useCloudMachine(entity, cloudmachine) {
+
+            //ajatuspilvi-koneen infon näyttäminen
+            let thoughtInfo = document.getElementById("thoughtInfo");
+            thoughtInfo.style.display = "block"; 
+ 
+            //input-kentän näyttäminen
+            let inputField = document.getElementById("thoughtInput");
+            inputField.style.display = "block";
+            inputField.focus(); 
+
+    }
+
+    //inputin käsittely
+
+    function handleThoughtInput(event) {
+        //jos käytetty näppäin ei ole Enter, ei tehdä mitään
+        if (event.key !== "Enter") return;
+
+        //muuten:
+
+        const userThought = event.target.value;
+        const scene = game.scene.scenes[0]; 
+
+        //leijaileva ajatus
+        const flyingThought = scene.add.text(450, 250, userThought, {
+            fontSize: '24px',
+            fill: '#000',
+            fontFamily: 'Arial',
+            align: 'center'
+        }).setOrigin(0.5);
+
+        scene.tweens.add({
+            targets: flyingThought,
+            y: flyingThought.y - 200,
+            alpha: 0,
+            duration: 4000,
+            ease: 'Sine.easeOut',
+            onComplete: () => flyingThought.destroy()
+        });
+
+        //päivitetään tilat ja piilotetaan kenttä
+        event.target.value = "";
+        event.target.style.display = "none";
+        document.getElementById("thoughtInfo").style.display = "none";
+
+        //lisätään mindfulness-pisteitä
+        points += 10;
+        infoText.setText("Mindfulness points: " + points + " Entity's name:" + entityName);
+
+        textInputActive = false;
+    }
+
+
     //liikkuminen
 
     function update ()
@@ -186,6 +250,12 @@
 
 
 </script>
+
+<!-- ajatuspilvi-koneen info ja input-kenttä -->
+<p id="thoughtInfo" onkeydown="handleThoughtInput(event)"style="display: none; position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">Sometimes stubborn thoughts fill our minds. Write a word that describes your thoughts and watch it float away.</p>
+<input id="thoughtInput" type="text" onkeydown="handleThoughtInput(event)" placeholder="Write a word" style="display: none; position: absolute; top: 200px; left: 50%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
 
 </body>
 </html>
