@@ -47,7 +47,13 @@
 
     let flyingThought;
 
+    let timerText;
+    let timer;
     
+    //tätä muuttujaa käytetään ajastimen tilan tarkistamiseen ja hahmon liikkeen estämiseen ajastimen aikana
+    let isTimerActive = false;
+
+    let pointsToAdd = 0;
 
 
     function preload ()
@@ -129,7 +135,6 @@
         this.physics.add.collider(entity, cloudmachine, useCloudMachine, null, this);
 
         
-
         //jääkaappi
 
         fridge = this.physics.add.sprite(820, 520, 'fridge');
@@ -144,7 +149,19 @@
         tree.setImmovable(true);
         tree.body.allowGravity = false;
 
-        this.physics.add.collider(tree, entity);
+        this.physics.add.collider(entity, tree, useTree, null, this);
+
+        //puun ajastin
+   
+        timerText = this.add.text(400, 32, '', { fontSize: '20px', fill: 'black', fontFamily: 'Arial' });
+
+        //puun nappien toiminta ja ajastimen käynnistys
+
+        document.getElementById("1min").addEventListener("click", () => startTimer.call(this, 60));
+        document.getElementById("5min").addEventListener("click", () => startTimer.call(this, 300));
+        document.getElementById("10min").addEventListener("click", () => startTimer.call(this, 600));
+        document.getElementById("close").addEventListener("click", closeTreeView);
+        
 
         //mindversum
 
@@ -177,7 +194,7 @@
 
     }
 
-    //inputin käsittely
+    //ajatuspilvi-koneen inputin käsittely
 
     function handleThoughtInput(event) {
         //jos käytetty näppäin ei ole Enter, ei tehdä mitään
@@ -214,7 +231,97 @@
         points += 10;
         infoText.setText("Mindfulness points: " + points + " Entity's name:" + entityName);
 
-        textInputActive = false;
+    }
+
+    //rauhoittumispuun käyttö
+
+    function useTree(entity, tree) {
+
+        //näytetään rauhoittumispuun elementit
+
+        let treeTest = document.getElementById("treeInfo");
+        treeTest.style.display = "block"; 
+
+        let button1 = document.getElementById("1min");
+        button1.style.display = "block"; 
+
+        let button5 = document.getElementById("5min");
+        button5.style.display = "block";
+
+        let button10 = document.getElementById("10min");
+        button10.style.display = "block";
+
+        let buttonClose = document.getElementById("close");
+        buttonClose.style.display = "block";
+    }
+
+    //rauhoittumispuun ajastimen toiminta
+    //ajastimen rakentamisessa hyödynnetty pohjana https://phaser.discourse.group/t/countdown-timer/2471/3 jjcapellan-käyttäjän koodia (joka on muokattu versio Phaserin omasta esimerkistä) ja jatkokehitetty/muokattu ajastimen toimintaa pelin tarpeiden mukaan
+
+    //ajan muotoilu
+    function formatTime(seconds){
+        //minuutit
+        let minutes = Math.floor(seconds/60);
+        //sekuntit
+        let partInSeconds = seconds%60;
+        //lisätään nollat eteen
+        partInSeconds = partInSeconds.toString().padStart(2,'0');
+        //palautetaan muotoiltu aika
+        return `${minutes}:${partInSeconds}`;
+    }
+
+
+    //ajastimen käynnistys
+    function startTimer(seconds) {
+        this.initialTime = seconds;
+        timerText.setText(formatTime(this.initialTime));
+        closeTreeView(); 
+
+        isTimerActive = true; //ajastin on aktiivinen
+
+        //määritellään saatavat pisteet ajastimen ajan mukaan
+        if (seconds === 60) {
+            pointsToAdd = 20; // 1 minuutti
+        } else if (seconds === 300) {
+            pointsToAdd = 50; // 5 minuuttia
+        } else if (seconds === 600) {
+            pointsToAdd = 100; // 10 minuuttia
+        }
+
+        //ajastintapahtuma
+        timer = this.time.addEvent({
+            delay: 1000,
+            callback: timerOn, //kutsutaan timerOn-funktiota
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    //ajastimen toiminta
+
+    function timerOn() {
+        this.initialTime -= 1; //vähennetään aikaa sekunnilla
+        timerText.setText(formatTime(this.initialTime));
+
+        //kun aika loppuu, piilotetaan ajastin ja lisätään mindfulness-pisteitä
+        if (this.initialTime <= 0) {
+            timerText.setText(''); //piilotetaan ajastin
+            timer.remove(); //pysäytetään ajastin
+            points += pointsToAdd; //lisätään mindfulness-pisteitä
+            infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+            isTimerActive = false; //ajastin ei ole enää aktiivinen
+        }
+    }
+
+    //valintanappien poistuminen näkyvistä
+    function closeTreeView() {
+
+        document.getElementById("treeInfo").style.display = "none";
+        document.getElementById("1min").style.display = "none";
+        document.getElementById("5min").style.display = "none";
+        document.getElementById("10min").style.display = "none";
+        document.getElementById("close").style.display = "none";
+
     }
 
 
@@ -222,6 +329,12 @@
 
     function update ()
     {
+        if (isTimerActive) {
+            entity.setVelocityX(0); // Pysäytä hahmon liike
+            entity.anims.play('turn'); // Aseta hahmo paikalleen
+            return; // Lopeta päivitys
+        }
+
         if (cursors.left.isDown)
         {
             entity.setVelocityX(-160);
@@ -256,6 +369,23 @@
               font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">Sometimes stubborn thoughts fill our minds. Write a word that describes your thoughts and watch it float away.</p>
 <input id="thoughtInput" type="text" onkeydown="handleThoughtInput(event)" placeholder="Write a word" style="display: none; position: absolute; top: 200px; left: 50%; transform: translateX(-50%);
               font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+
+<!-- rauhoittumispuun elementit -->
+<p id="treeInfo" style="display: none; position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">It's good to take some time and meditate by the tree. How long?</p>
+
+<button id="1min" style="display: none; position: absolute; top: 200px; left: 40%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">1 minute</button>
+
+<button id="5min" style="display: none; position: absolute; top: 200px; left: 50%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">5 minutes</button>
+
+<button id="10min" style="display: none; position: absolute; top: 200px; left: 60%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">10 minutes</button>
+
+<button id="close" style="display: none; position: absolute; top: 270px; left: 50%; transform: translateX(-50%);
+              font-size: 18px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">Not right now</button>
+
 
 </body>
 </html>
