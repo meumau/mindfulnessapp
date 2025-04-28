@@ -1,0 +1,69 @@
+/* Kehon tyyli */
+body {
+    margin: 20px;
+    text-align: center;
+    background-color: #c9bad3;
+}
+
+/* Ajatuspilvi-koneen info ja input-kenttä */
+#thoughtInfo, #thoughtInput {
+    display: none;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+#thoughtInput {
+    top: 200px;
+}
+
+/* Rauhoittumispuun elementit */
+#treeInfo {
+    display: none;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    display: none;
+    position: absolute;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+#oneMin {
+    top: 200px;
+    left: 40%;
+    transform: translateX(-50%);
+}
+
+#fiveMin {
+    top: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#tenMin {
+    top: 200px;
+    left: 60%;
+    transform: translateX(-50%);
+}
+
+#close {
+    top: 270px;
+    left: 50%;
+    transform: translateX(-50%);
+}
