@@ -23,7 +23,9 @@ let game = new Phaser.Game(config);
 let entity;
 let entityName = "Dora";
 
-let points = 0;
+//peli hakee pisteet localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
+localStorage.getItem("points") ? points = parseInt(localStorage.getItem("points"), 10) : points = 0;
+
 let infoText;
 
 let flyingThought;
@@ -216,6 +218,7 @@ function handleThoughtInput(event) {
     //lisätään mindfulness-pisteitä
     points += 10;
     infoText.setText("Mindfulness points: " + points + " Entity's name:" + entityName);
+    localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
 }
 
@@ -295,6 +298,7 @@ function timerOn() {
         timer.remove(); //pysäytetään ajastin
         points += pointsToAdd; //lisätään mindfulness-pisteitä
         infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+        localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
         isTimerActive = false; //ajastin ei ole enää aktiivinen
     }
 }
@@ -335,6 +339,7 @@ function closeFridge() {
 
     points += 10; //lisätään mindfulness-pisteitä
     infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+    localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
     document.getElementById("fridgeInfo").style.display = "none";
     document.getElementById("food1").style.display = "none";
