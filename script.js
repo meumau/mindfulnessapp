@@ -115,14 +115,6 @@ function create ()
 
     this.physics.add.collider(entity, cloudmachine, useCloudMachine, null, this);
 
-    
-    //jääkaappi
-
-    fridge = this.physics.add.sprite(820, 520, 'fridge');
-    fridge.setImmovable(true);
-    fridge.body.allowGravity = false;
-
-    this.physics.add.collider(fridge, entity);
 
     //puu
 
@@ -143,6 +135,19 @@ function create ()
     document.getElementById("tenMin").addEventListener("click", () => startTimer.call(this, 600));
     document.getElementById("close").addEventListener("click", closeTreeView);
     
+    //jääkaappi
+
+    fridge = this.physics.add.sprite(820, 520, 'fridge');
+    fridge.setImmovable(true);
+    fridge.body.allowGravity = false;
+
+    this.physics.add.collider(entity,fridge, useFridge, null, this);
+
+    //jääkaapin nappien toiminta
+
+    document.getElementById("food1").addEventListener("click", closeFridge);
+    document.getElementById("food2").addEventListener("click", closeFridge);
+    document.getElementById("food3").addEventListener("click", closeFridge);
 
     //mindversum
 
@@ -305,6 +310,38 @@ function closeTreeView() {
 
 }
 
+
+//jääkaapin käyttö
+
+function useFridge(entity, fridge) {
+
+    let fridgeInfo = document.getElementById("fridgeInfo");
+    fridgeInfo.style.display = "block"; 
+
+    let food1 = document.getElementById("food1");
+    food1.style.display = "block"; 
+
+    let food2 = document.getElementById("food2");
+    food2.style.display = "block"; 
+
+    let food3 = document.getElementById("food3");
+    food3.style.display = "block"; 
+
+}
+
+
+//valintanappien poistuminen näkyvistä
+function closeFridge() {
+
+    points += 10; //lisätään mindfulness-pisteitä
+    infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+
+    document.getElementById("fridgeInfo").style.display = "none";
+    document.getElementById("food1").style.display = "none";
+    document.getElementById("food2").style.display = "none";
+    document.getElementById("food3").style.display = "none";
+
+}
 
 //liikkuminen
 
