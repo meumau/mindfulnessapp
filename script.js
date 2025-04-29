@@ -16,12 +16,14 @@ let config = {
     }
 };
 
+
+
 //muuttujat
 
 let game = new Phaser.Game(config);
 
 let entity;
-let entityName = "Dora";
+let entityName;
 
 //peli hakee pisteet localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
 localStorage.getItem("points") ? points = parseInt(localStorage.getItem("points"), 10) : points = 0;
@@ -30,9 +32,9 @@ let infoText;
 
 let mindversumText;
 
+//peli hakee mindversum-pisteet ja entityjen määrän localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
 localStorage.getItem("mindversumPoints") ? mindversumPoints = parseInt(localStorage.getItem("mindversumPoints"), 10) : mindversumPoints = 0;
 localStorage.getItem("entityCount") ? entityCount = parseInt(localStorage.getItem("entityCount"), 10) : entityCount = 0;    
-
 
 let flyingThought;
 
@@ -47,6 +49,10 @@ let pointsToAdd = 0;
 
 function preload ()
 {
+    //nimet
+
+    this.load.json('names', 'names.json');
+
     //kuvat
 
     this.load.image('bg', 'assets/blank-bg.png');
@@ -64,6 +70,16 @@ function preload ()
 
 function create ()
 {
+    //hahmon nimen määritys
+        
+    //arvotaan satunnainen nimi, jos localStoragessa ei ole jo nimeä
+    if (!localStorage.getItem("entityName")) {
+    generateName();
+    }
+
+    //haetaan nimi localStoragesta
+    entityName = localStorage.getItem("entityName");
+    
 
     //maailman luonti
 
@@ -230,7 +246,7 @@ function handleThoughtInput(event) {
 
     //lisätään mindfulness-pisteitä
     points += 10;
-    infoText.setText("Mindfulness points: " + points + " Entity's name:" + entityName);
+    infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
     localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
 }
@@ -413,6 +429,9 @@ function newEntity() {
     localStorage.setItem("entityCount", entityCount); // tallennetaan entityjen määrä localStorageen
 
     points = 0; //nollataan pisteet
+
+    generateName(); //luodaan uusi nimi
+    
     infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
     localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
@@ -427,6 +446,18 @@ function closeMindversum() {
 
 }
 
+//generoidaan uusi nimi
+function generateName() {
+
+    const scene = game.scene.scenes[0];
+    //haetaan nimet
+    const names = scene.cache.json.get('names');
+    //arvotaan nimi    
+    entityName = names[Math.floor(Math.random() * names.length)];
+    localStorage.setItem("entityName", entityName); // tallennetaan uusi nimi localStorageen
+
+}
+
 
 
 //liikkuminen
@@ -434,9 +465,9 @@ function closeMindversum() {
 function update ()
 {
     if (isTimerActive) {
-        entity.setVelocityX(0); // Pysäytä hahmon liike
-        entity.anims.play('turn'); // Aseta hahmo paikalleen
-        return; // Lopeta päivitys
+        entity.setVelocityX(0); //pysäytetään hahmon liike
+        entity.anims.play('turn'); //asetetaan hahmo paikalleen
+        return; 
     }
 
     if (cursors.left.isDown)
