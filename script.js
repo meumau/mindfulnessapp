@@ -28,6 +28,12 @@ localStorage.getItem("points") ? points = parseInt(localStorage.getItem("points"
 
 let infoText;
 
+let mindversumText;
+
+localStorage.getItem("mindversumPoints") ? mindversumPoints = parseInt(localStorage.getItem("mindversumPoints"), 10) : mindversumPoints = 0;
+localStorage.getItem("entityCount") ? entityCount = parseInt(localStorage.getItem("entityCount"), 10) : entityCount = 0;    
+
+
 let flyingThought;
 
 let timerText;
@@ -143,7 +149,7 @@ function create ()
     fridge.setImmovable(true);
     fridge.body.allowGravity = false;
 
-    this.physics.add.collider(entity,fridge, useFridge, null, this);
+    this.physics.add.collider(entity, fridge, useFridge, null, this);
 
     //jääkaapin nappien toiminta
 
@@ -157,13 +163,20 @@ function create ()
     mindversum.setImmovable(true);
     mindversum.body.allowGravity = false;
 
-    this.physics.add.collider(mindversum, entity);
+    this.physics.add.collider(entity, mindversum, useMindversum, null, this);
 
+    //mindversum-koneen nappien toiminta
+
+    document.getElementById("yes").addEventListener("click", goToMindversum);
+    document.getElementById("no").addEventListener("click", closeMindversum);
 
     //hahmon tiedot
 
     infoText = this.add.text(16, 435, 'Mindfulness points: ' + points + " Entity's name: " + entityName, { fontSize: '20px', fill: 'white', fontFamily: 'Arial' });
 
+    //mindversumin tiedot
+
+    mindversumText = this.add.text(16, -120, 'Entities in mindversum: ' + entityCount + " Points in mindversum: " + mindversumPoints, { fontSize: '20px', fill: 'black', fontFamily: 'Arial' });
 
 }
 
@@ -347,6 +360,74 @@ function closeFridge() {
     document.getElementById("food3").style.display = "none";
 
 }
+
+//mindversum-koneen käyttö
+function useMindversum(entity, mindversum) {
+
+    //näytetään mindversum-koneen elementit
+    document.getElementById("mindversumInfo").style.display = "block";
+    document.getElementById("yes").style.display = "block";
+    document.getElementById("no").style.display = "block";
+
+}
+
+//mindversumiin siirtyminen
+function goToMindversum() {
+
+//elementtien piilotus
+closeMindversum();
+
+const scene = game.scene.scenes[0];
+
+//mindversumiin siirtymisen ja "uuden hahmon" luomisen animaatio
+ scene.tweens.add({
+    targets: entity,
+    y: entity.y - 200,
+    x: entity.x + 200,
+    alpha: 0,           
+    duration: 4000,     
+    ease: 'Sine.easeOut',
+    onComplete: function () {
+
+        entity.setAlpha(1);             
+        entity.setY(0);                   
+
+        scene.tweens.add({
+            targets: entity,
+            y: scene.sys.game.config.height - 150,  
+            duration: 1000,                     
+            ease: 'Sine.easeIn',
+            onComplete:newEntity ()
+        });
+    }
+});
+
+}
+
+//mindversumpisteiden ja entityjen määrän lisääminen ja uuden hahmon tietojen määrittely
+function newEntity() {
+    mindversumPoints += points; //lisätään mindversum-pisteitä
+    entityCount += 1; //lisätään entityjen määrää
+    mindversumText.setText("Entities in mindversum " + entityCount + " Points in mindversum: " + mindversumPoints);
+    localStorage.setItem("mindversumPoints", mindversumPoints); // tallennetaan mindversum-pisteet localStorageen
+    localStorage.setItem("entityCount", entityCount); // tallennetaan entityjen määrä localStorageen
+
+    points = 0; //nollataan pisteet
+    infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+    localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
+
+}
+
+
+//mindversum-koneen valintanappien poistuminen näkyvistä
+function closeMindversum() {
+    document.getElementById("mindversumInfo").style.display = "none";
+    document.getElementById("yes").style.display = "none";
+    document.getElementById("no").style.display = "none";
+
+}
+
+
 
 //liikkuminen
 
