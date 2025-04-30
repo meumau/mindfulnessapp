@@ -55,16 +55,18 @@ function preload ()
 
     //kuvat
 
-    this.load.image('bg', 'assets/blank-bg.png');
-    this.load.image('platform', 'assets/blank-platform.png');
-    this.load.image('ground', 'assets/blank-ground.png');
-    this.load.image('cloudmachine', 'assets/box1.png');
-    this.load.image('fridge', 'assets/box2.png');
-    this.load.image('tree', 'assets/box3.png');
-    this.load.image('mindversum', 'assets/box4.png');
+    this.load.image('bg', 'assets/background.png');
+    this.load.image('block1', 'assets/block1.png');
+    this.load.image('block2', 'assets/block2.png');
+    this.load.image('block3', 'assets/block3.png');
+    this.load.image('ground', 'assets/ground.png');
+    this.load.image('cloudmachine', 'assets/thoughtmachine.png');
+    this.load.image('fridge', 'assets/fridge.png');
+    this.load.image('tree', 'assets/tree.png');
+    this.load.image('mindversum', 'assets/mindfulverse.png');
     this.load.spritesheet('entity', 
-    'assets/default.png',
-    { frameWidth: 32, frameHeight: 30 }
+    'assets/entity.png',
+    { frameWidth: 32, frameHeight: 27 }
 );
 }
 
@@ -89,9 +91,13 @@ function create ()
 
     platforms.create(450, 575, 'ground').refreshBody();
 
-    platforms.create(460, 400, 'platform');
-    platforms.create(100, 250, 'platform');
-    platforms.create(800, 250, 'platform');
+    platforms.create(560, 400, 'block3');
+    platforms.create(100, 200, 'block2');
+    platforms.create(800, 250, 'block2');
+    platforms.create(360, 300, 'block1');
+    platforms.create(860, 420, 'block2');
+    platforms.create(530, 150, 'block3');
+    platforms.create(120, 430, 'block3');
 
     //hahmo
 
@@ -133,7 +139,7 @@ function create ()
 
     //ajatuspilvi-kone
 
-    cloudmachine = this.physics.add.sprite(460, 349, 'cloudmachine');
+    cloudmachine = this.physics.add.sprite(360, 269, 'cloudmachine');
     cloudmachine.setImmovable(true);
     cloudmachine.body.allowGravity = false;
 
@@ -142,7 +148,7 @@ function create ()
 
     //puu
 
-    tree = this.physics.add.sprite(800, 172, 'tree');
+    tree = this.physics.add.sprite(800, 175, 'tree');
     tree.setImmovable(true);
     tree.body.allowGravity = false;
 
@@ -161,7 +167,7 @@ function create ()
     
     //jääkaappi
 
-    fridge = this.physics.add.sprite(820, 520, 'fridge');
+    fridge = this.physics.add.sprite(820, 384, 'fridge');
     fridge.setImmovable(true);
     fridge.body.allowGravity = false;
 
@@ -175,7 +181,7 @@ function create ()
 
     //mindversum
 
-    mindversum = this.physics.add.sprite(100, 203, 'mindversum');
+    mindversum = this.physics.add.sprite(80, 154, 'mindversum');
     mindversum.setImmovable(true);
     mindversum.body.allowGravity = false;
 
@@ -223,7 +229,7 @@ function handleThoughtInput(event) {
     const scene = game.scene.scenes[0]; 
 
     //leijaileva ajatus
-    const flyingThought = scene.add.text(450, 250, userThought, {
+    const flyingThought = scene.add.text(360, 200, userThought, {
         fontSize: '24px',
         fill: '#000',
         fontFamily: 'Arial',
@@ -398,8 +404,8 @@ const scene = game.scene.scenes[0];
 //mindversumiin siirtymisen ja "uuden hahmon" luomisen animaatio
  scene.tweens.add({
     targets: entity,
-    y: entity.y - 200,
-    x: entity.x + 200,
+    y: entity.y - 150,
+    x: entity.x + 140,
     alpha: 0,           
     duration: 4000,     
     ease: 'Sine.easeOut',
@@ -491,6 +497,6 @@ function update ()
 
     if (cursors.up.isDown && entity.body.touching.down)
     {
-        entity.setVelocityY(-330);
+        entity.setVelocityY(-260);
     }
 }
