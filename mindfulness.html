@@ -5,45 +5,59 @@
     <title>Mindfulness game</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 <body>
 
-<!-- ajatuspilvi-koneen info ja input-kenttä -->
-<p id="thoughtInfo" onkeydown="handleThoughtInput(event)">
-    Sometimes stubborn thoughts fill our minds. Write a word that describes your thoughts and watch it float away.
-</p>
+    <audio autoplay id="musicPlayer" src="assets/music.mp3" loop></audio>
 
-<input id="thoughtInput" type="text" onkeydown="handleThoughtInput(event)" placeholder="Write a word">
+<div id="infoBox">
+    <p><strong>Welcome to The Mindfulness Land!</strong></p>
+    <p>Here you can do mindful tasks with your entity. Use the cloudmachine to send your stressful thoughts away. Feed your entity well doing snacks or meditate by the calming tree. You get mindfulness points by doing these tasks.</p>
+    <p>When you are ready with your entity, you can send them to the mindversum with the mindversum machine. And as soon as one goes, one comes and you are free to continue mindful activities with a new entity.</p>
+    <button id="ok"><a>Okay</a></button>
+</div>
+
+<!-- ajatuspilvi-koneen info ja input-kenttä -->
+<div id="thoughtInfo">
+    <p>Sometimes stubborn thoughts fill our minds. Write a word that describes your thoughts and watch it float away.</p>
+    <input id="thoughtInput" type="text" onkeydown="handleThoughtInput(event)" placeholder="Write a word">
+</div>
+
+
 
 <!-- rauhoittumispuun info ja napit -->
-<p id="treeInfo">
-    It's good to take some time and meditate by the tree. How long?
-</p>
+<div id="treeInfo">
+    <p>Take some time and meditate by the tree. Choose time:</p>
 
-<button id="oneMin">1 minute</button>
-<button id="fiveMin">5 minutes</button>
-<button id="tenMin">10 minutes</button>
-<button id="close">Not right now</button>
+    <button id="oneMin">1 minute</button>
+    <button id="fiveMin">5 minutes</button>
+    <button id="tenMin">10 minutes</button>
+    <button id="close">Not right now</button>
+</div>
+
+
 
 <!-- jääkaapin info ja napit -->
 
-<p id="fridgeInfo">
-    It is important to nourish your body and mind. What would you like to have?
-</p>
+<div id="fridgeInfo">
+    <p>It is important to nourish your body and mind. What would you like to have?</p>
+    <button id="food1">Healing soup</button>
+    <button id="food2">Thoughtful tea</button>
+    <button id="food3">Calming cake</button>
+</div>
 
-<button id="food1">Healing soup</button>
-<button id="food2">Thoughtful tea</button>
-<button id="food3">Calming cake</button>
+
 
 
 <!-- mindversumin info ja napit -->
 
-<p id="mindversumInfo">
-    Are you ready to send this entity to the mindversum?
-</p>
+<div id="mindversumInfo">
+    <p>Are you ready to send this entity to the mindversum?</p>
+    <button id="yes">Yes!</button>
+    <button id="no">I'm not ready yet</button>
+</div>
 
-<button id="yes">Yes!</button>
-<button id="no">I'm not ready yet</button>
 
 
 <script src="script.js" defer></script>    

@@ -1,7 +1,7 @@
 let config = {
     type: Phaser.AUTO,
     width: 900,
-    height: 600,
+    height: 550,
     physics: {
         default: 'arcade',
         arcade: {
@@ -42,9 +42,12 @@ let timerText;
 let timer;
 
 //tätä muuttujaa käytetään ajastimen tilan tarkistamiseen ja hahmon liikkeen estämiseen ajastimen aikana
-let isTimerActive = false;
+let ongoingTask = false;
 
 let pointsToAdd = 0;
+
+//musiikkisoitin
+let music = document.getElementById('musicPlayer');
 
 
 function preload ()
@@ -55,6 +58,8 @@ function preload ()
 
     //kuvat
 
+    this.load.image('topBlock', 'assets/topblock.png');
+    this.load.image('note', 'assets/note.png');
     this.load.image('bg', 'assets/background.png');
     this.load.image('block1', 'assets/block1.png');
     this.load.image('block2', 'assets/block2.png');
@@ -89,7 +94,7 @@ function create ()
 
     platforms = this.physics.add.staticGroup();
 
-    platforms.create(450, 575, 'ground').refreshBody();
+    platforms.create(450, 525, 'ground').refreshBody();
 
     platforms.create(560, 400, 'block3');
     platforms.create(100, 200, 'block2');
@@ -99,9 +104,13 @@ function create ()
     platforms.create(530, 150, 'block3');
     platforms.create(120, 430, 'block3');
 
+    
+    platforms.create(450, 20, 'topBlock');
+
+
     //hahmo
 
-    entity = this.physics.add.sprite(250, -350, 'entity');
+    entity = this.physics.add.sprite(250, 300, 'entity');
 
     entity.setBounce(0.2);
     entity.setCollideWorldBounds(true);
@@ -135,6 +144,10 @@ function create ()
 
     cursors = this.input.keyboard.createCursorKeys();
 
+    //infolaatikon piilotus napilla
+    document.getElementById("ok").addEventListener("click", function() {
+        document.getElementById("infoBox").style.display = "none";
+    });
 
 
     //ajatuspilvi-kone
@@ -156,7 +169,7 @@ function create ()
 
     //puun ajastin
 
-    timerText = this.add.text(400, 32, '', { fontSize: '20px', fill: 'black', fontFamily: 'Arial' });
+    timerText = this.add.text(780, -22, '', { fontSize: '20px', fill: '#393743', fontFamily: 'monospace', align: 'center' });
 
     //puun nappien toiminta ja ajastimen käynnistys
 
@@ -194,17 +207,32 @@ function create ()
 
     //hahmon tiedot
 
-    infoText = this.add.text(16, 435, 'Mindfulness points: ' + points + " Entity's name: " + entityName, { fontSize: '20px', fill: 'white', fontFamily: 'Arial' });
+    infoText = this.add.text(16, 437, 'Mindfulness points: ' + points + "  Entity's name: " + entityName, { fontSize: '16px', fill: '#f0e2f9', fontFamily: 'monospace' });
 
     //mindversumin tiedot
 
-    mindversumText = this.add.text(16, -120, 'Entities in mindversum: ' + entityCount + " Points in mindversum: " + mindversumPoints, { fontSize: '20px', fill: 'black', fontFamily: 'Arial' });
+    mindversumText = this.add.text(16, -73, 'Entities in mindversum: ' + entityCount + "  Points in mindversum: " + mindversumPoints, { fontSize: '16px', fill: '#393743', fontFamily: 'monospace' });
 
+    //musiikin säätely
+    
+    let musicButton = this.add.image(870, 20, 'note').setInteractive(); 
+    let isPlaying = true;
+
+    musicButton.on('pointerdown', function () {
+        if (isPlaying) {
+            music.pause();
+        } else {
+            music.play();
+        }
+        isPlaying = !isPlaying;
+    });
 }
 
 //ajatuspilvi-koneen käyttö
 
-function useCloudMachine(entity, cloudmachine) {
+function useCloudMachine() {
+
+    if (entity.body.touching.left || entity.body.touching.right) {
 
         //ajatuspilvi-koneen infon näyttäminen
         let thoughtInfo = document.getElementById("thoughtInfo");
@@ -214,6 +242,10 @@ function useCloudMachine(entity, cloudmachine) {
         let inputField = document.getElementById("thoughtInput");
         inputField.style.display = "block";
         inputField.focus(); 
+
+        ongoingTask = true; 
+
+    }
 
 }
 
@@ -232,7 +264,7 @@ function handleThoughtInput(event) {
     const flyingThought = scene.add.text(360, 200, userThought, {
         fontSize: '24px',
         fill: '#000',
-        fontFamily: 'Arial',
+        fontFamily: 'monospace',
         align: 'center'
     }).setOrigin(0.5);
 
@@ -252,31 +284,23 @@ function handleThoughtInput(event) {
 
     //lisätään mindfulness-pisteitä
     points += 10;
-    infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+    infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
     localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
+
+    ongoingTask = false; 
 
 }
 
 //rauhoittumispuun käyttö
 
-function useTree(entity, tree) {
+function useTree() {
 
+    if (entity.body.touching.left || entity.body.touching.right) {
     //näytetään rauhoittumispuun elementit
+    let treeUse = document.getElementById("treeInfo");
+    treeUse.style.display = "block"; 
+    }
 
-    let treeTest = document.getElementById("treeInfo");
-    treeTest.style.display = "block"; 
-
-    let button1 = document.getElementById("oneMin");
-    button1.style.display = "block"; 
-
-    let button5 = document.getElementById("fiveMin");
-    button5.style.display = "block";
-
-    let button10 = document.getElementById("tenMin");
-    button10.style.display = "block";
-
-    let buttonClose = document.getElementById("close");
-    buttonClose.style.display = "block";
 }
 
 //rauhoittumispuun ajastimen toiminta
@@ -301,7 +325,7 @@ function startTimer(seconds) {
     timerText.setText(formatTime(this.initialTime));
     closeTreeView(); 
 
-    isTimerActive = true; //ajastin on aktiivinen
+    ongoingTask = true; //ajastin on aktiivinen
 
     //määritellään saatavat pisteet ajastimen ajan mukaan
     if (seconds === 60) {
@@ -327,44 +351,38 @@ function timerOn() {
     this.initialTime -= 1; //vähennetään aikaa sekunnilla
     timerText.setText(formatTime(this.initialTime));
 
-    //kun aika loppuu, piilotetaan ajastin ja lisätään mindfulness-pisteitä
-    if (this.initialTime <= 0) {
-        timerText.setText(''); //piilotetaan ajastin
-        timer.remove(); //pysäytetään ajastin
+    //kun aika loppuu, näytetään Done teksti ja lisätään mindfulness-pisteitä
+    if (this.initialTime <= 0 && this.initialTime > -5) {
+        timerText.setText('Done'); //piilotetaan ajastin
         points += pointsToAdd; //lisätään mindfulness-pisteitä
-        infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+        infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
         localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
-        isTimerActive = false; //ajastin ei ole enää aktiivinen
+        ongoingTask = false; //ajastin ei ole enää aktiivinen
+    }
+
+    //kun ajastin on -5 sekuntia, piilotetaan done-teksti
+    if (this.initialTime <= -5) {
+        timerText.setText(''); 
+        timer.remove(); //poistetaan ajastin
     }
 }
 
 //valintanappien poistuminen näkyvistä
 function closeTreeView() {
-
     document.getElementById("treeInfo").style.display = "none";
-    document.getElementById("oneMin").style.display = "none";
-    document.getElementById("fiveMin").style.display = "none";
-    document.getElementById("tenMin").style.display = "none";
-    document.getElementById("close").style.display = "none";
-
 }
 
 
 //jääkaapin käyttö
 
-function useFridge(entity, fridge) {
+function useFridge() {
 
+    if (entity.body.touching.left || entity.body.touching.right) {
     let fridgeInfo = document.getElementById("fridgeInfo");
     fridgeInfo.style.display = "block"; 
 
-    let food1 = document.getElementById("food1");
-    food1.style.display = "block"; 
-
-    let food2 = document.getElementById("food2");
-    food2.style.display = "block"; 
-
-    let food3 = document.getElementById("food3");
-    food3.style.display = "block"; 
+    ongoingTask = true; 
+    }
 
 }
 
@@ -373,23 +391,25 @@ function useFridge(entity, fridge) {
 function closeFridge() {
 
     points += 10; //lisätään mindfulness-pisteitä
-    infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+    infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
     localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
     document.getElementById("fridgeInfo").style.display = "none";
-    document.getElementById("food1").style.display = "none";
-    document.getElementById("food2").style.display = "none";
-    document.getElementById("food3").style.display = "none";
+
+    ongoingTask = false; 
+
 
 }
 
 //mindversum-koneen käyttö
-function useMindversum(entity, mindversum) {
+function useMindversum() {
 
+    if (entity.body.touching.left || entity.body.touching.right) {
     //näytetään mindversum-koneen elementit
     document.getElementById("mindversumInfo").style.display = "block";
-    document.getElementById("yes").style.display = "block";
-    document.getElementById("no").style.display = "block";
+
+    ongoingTask = true; 
+    }
 
 }
 
@@ -416,7 +436,7 @@ const scene = game.scene.scenes[0];
 
         scene.tweens.add({
             targets: entity,
-            y: scene.sys.game.config.height - 150,  
+            y: scene.sys.game.config.height - 100,  
             duration: 1000,                     
             ease: 'Sine.easeIn',
             onComplete:newEntity ()
@@ -424,13 +444,15 @@ const scene = game.scene.scenes[0];
     }
 });
 
+ongoingTask = false; 
+
 }
 
 //mindversumpisteiden ja entityjen määrän lisääminen ja uuden hahmon tietojen määrittely
 function newEntity() {
     mindversumPoints += points; //lisätään mindversum-pisteitä
     entityCount += 1; //lisätään entityjen määrää
-    mindversumText.setText("Entities in mindversum " + entityCount + " Points in mindversum: " + mindversumPoints);
+    mindversumText.setText("Entities in mindversum: " + entityCount + "  Points in mindversum: " + mindversumPoints);
     localStorage.setItem("mindversumPoints", mindversumPoints); // tallennetaan mindversum-pisteet localStorageen
     localStorage.setItem("entityCount", entityCount); // tallennetaan entityjen määrä localStorageen
 
@@ -438,7 +460,7 @@ function newEntity() {
 
     generateName(); //luodaan uusi nimi
     
-    infoText.setText("Mindfulness points: " + points + " Entity's name: " + entityName);
+    infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
     localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
 }
@@ -447,8 +469,7 @@ function newEntity() {
 //mindversum-koneen valintanappien poistuminen näkyvistä
 function closeMindversum() {
     document.getElementById("mindversumInfo").style.display = "none";
-    document.getElementById("yes").style.display = "none";
-    document.getElementById("no").style.display = "none";
+    ongoingTask = false; 
 
 }
 
@@ -470,7 +491,7 @@ function generateName() {
 
 function update ()
 {
-    if (isTimerActive) {
+    if (ongoingTask) {
         entity.setVelocityX(0); //pysäytetään hahmon liike
         entity.anims.play('turn'); //asetetaan hahmo paikalleen
         return; 
