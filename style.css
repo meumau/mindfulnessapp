@@ -99,3 +99,7 @@ button {
     display: inline-block;
     margin: 10px;
 }
+
+#food1, #food2, #food3 {
+    background-color: rgba(0, 0, 0, 0.0);
+}

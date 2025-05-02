@@ -22,39 +22,52 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+//entiteetti ja sen nimi
 let entity;
 let entityName;
 
 //peli hakee pisteet localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
 localStorage.getItem("points") ? points = parseInt(localStorage.getItem("points"), 10) : points = 0;
 
+//info teksti
 let infoText;
 
+//mindversumin statsit
 let mindversumText;
 
 //peli hakee mindversum-pisteet ja entityjen määrän localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
 localStorage.getItem("mindversumPoints") ? mindversumPoints = parseInt(localStorage.getItem("mindversumPoints"), 10) : mindversumPoints = 0;
 localStorage.getItem("entityCount") ? entityCount = parseInt(localStorage.getItem("entityCount"), 10) : entityCount = 0;    
 
+//lentävä ajatus
 let flyingThought;
 
+//ajastimen sisältö
 let timerText;
 let timer;
 
 //tätä muuttujaa käytetään ajastimen tilan tarkistamiseen ja hahmon liikkeen estämiseen ajastimen aikana
 let ongoingTask = false;
 
+//muuttuja pisteiden lisäämiseen
 let pointsToAdd = 0;
 
 //musiikkisoitin
 let music = document.getElementById('musicPlayer');
 
+//muuttuja joka määrittää onko quote ruudussa tällä hetkellä
+let isQuoteActive = false;
+
+//merkkiääni
+let beep = document.getElementById('beep');
+
 
 function preload ()
 {
-    //nimet
+    //json-filet
 
     this.load.json('names', 'names.json');
+    this.load.json('quotes', 'quotes.json');
 
     //kuvat
 
@@ -69,6 +82,7 @@ function preload ()
     this.load.image('fridge', 'assets/fridge.png');
     this.load.image('tree', 'assets/tree.png');
     this.load.image('mindversum', 'assets/mindfulverse.png');
+    this.load.image('wiseCat', 'assets/wiseCat.png');
     this.load.spritesheet('entity', 
     'assets/entity.png',
     { frameWidth: 32, frameHeight: 27 }
@@ -149,7 +163,6 @@ function create ()
         document.getElementById("infoBox").style.display = "none";
     });
 
-
     //ajatuspilvi-kone
 
     cloudmachine = this.physics.add.sprite(360, 269, 'cloudmachine');
@@ -157,7 +170,6 @@ function create ()
     cloudmachine.body.allowGravity = false;
 
     this.physics.add.collider(entity, cloudmachine, useCloudMachine, null, this);
-
 
     //puu
 
@@ -167,7 +179,7 @@ function create ()
 
     this.physics.add.collider(entity, tree, useTree, null, this);
 
-    //puun ajastin
+    //puun ajastin-teksti
 
     timerText = this.add.text(780, -22, '', { fontSize: '20px', fill: '#393743', fontFamily: 'monospace', align: 'center' });
 
@@ -192,7 +204,15 @@ function create ()
     document.getElementById("food2").addEventListener("click", closeFridge);
     document.getElementById("food3").addEventListener("click", closeFridge);
 
-    //mindversum
+    //viisas kissa
+
+    wiseCat = this.physics.add.sprite(120, 398, 'wiseCat');
+    wiseCat.setImmovable(true);
+    wiseCat.body.allowGravity = false;
+
+    this.physics.add.collider(entity, wiseCat, listenToTheCat, null, this);
+
+    //mindversum-kone
 
     mindversum = this.physics.add.sprite(80, 154, 'mindversum');
     mindversum.setImmovable(true);
@@ -218,6 +238,7 @@ function create ()
     let musicButton = this.add.image(870, 20, 'note').setInteractive(); 
     let isPlaying = true;
 
+    //musiikki menee tauolle ja takaisin päälle nappia painamalla
     musicButton.on('pointerdown', function () {
         if (isPlaying) {
             music.pause();
@@ -228,10 +249,13 @@ function create ()
     });
 }
 
+//muut funktiot:
+
 //ajatuspilvi-koneen käyttö
 
 function useCloudMachine() {
 
+    //jos hahmo koskee esineen sivuja
     if (entity.body.touching.left || entity.body.touching.right) {
 
         //ajatuspilvi-koneen infon näyttäminen
@@ -243,6 +267,7 @@ function useCloudMachine() {
         inputField.style.display = "block";
         inputField.focus(); 
 
+        //määritellään että task on käynnissä (hahmo ei voi liikkua)
         ongoingTask = true; 
 
     }
@@ -260,10 +285,10 @@ function handleThoughtInput(event) {
     const userThought = event.target.value;
     const scene = game.scene.scenes[0]; 
 
-    //leijaileva ajatus
+    //leijaileva ajatus -animaatio
     const flyingThought = scene.add.text(360, 200, userThought, {
         fontSize: '24px',
-        fill: '#000',
+        fill: '#393743',
         fontFamily: 'monospace',
         align: 'center'
     }).setOrigin(0.5);
@@ -287,6 +312,7 @@ function handleThoughtInput(event) {
     infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
     localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
 
+    //task ei ole enää käynnissä
     ongoingTask = false; 
 
 }
@@ -295,6 +321,7 @@ function handleThoughtInput(event) {
 
 function useTree() {
 
+    //jos hahmo koskee esineen sivuja
     if (entity.body.touching.left || entity.body.touching.right) {
     //näytetään rauhoittumispuun elementit
     let treeUse = document.getElementById("treeInfo");
@@ -353,11 +380,12 @@ function timerOn() {
 
     //kun aika loppuu, näytetään Done teksti ja lisätään mindfulness-pisteitä
     if (this.initialTime <= 0 && this.initialTime > -5) {
-        timerText.setText('Done'); //piilotetaan ajastin
+        timerText.setText('Done'); //ajastimen tilalle tulee teksti Done
         points += pointsToAdd; //lisätään mindfulness-pisteitä
         infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
         localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
         ongoingTask = false; //ajastin ei ole enää aktiivinen
+        beep.play(); //soitetaan merkkiääni
     }
 
     //kun ajastin on -5 sekuntia, piilotetaan done-teksti
@@ -367,7 +395,7 @@ function timerOn() {
     }
 }
 
-//valintanappien poistuminen näkyvistä
+//puun valintanappien poistuminen näkyvistä
 function closeTreeView() {
     document.getElementById("treeInfo").style.display = "none";
 }
@@ -377,10 +405,13 @@ function closeTreeView() {
 
 function useFridge() {
 
+    //jos hahmo koskee esineen sivuja
     if (entity.body.touching.left || entity.body.touching.right) {
+    //näytetään jääkaapin elementit
     let fridgeInfo = document.getElementById("fridgeInfo");
     fridgeInfo.style.display = "block"; 
 
+    //task käynnissä
     ongoingTask = true; 
     }
 
@@ -392,22 +423,84 @@ function closeFridge() {
 
     points += 10; //lisätään mindfulness-pisteitä
     infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
-    localStorage.setItem("points", points); // tallennetaan pisteet localStorageen
+    localStorage.setItem("points", points); //tallennetaan pisteet localStorageen
 
-    document.getElementById("fridgeInfo").style.display = "none";
+    document.getElementById("fridgeInfo").style.display = "none"; //piilotetaan sisältö
 
+    //task päättyy
     ongoingTask = false; 
+
+    //animaatio, jossa hahmo sanoo Yum!
+    const scene = game.scene.scenes[0]; 
+
+    const yum = scene.add.text(790, 320, 'Yum!', {
+        fontSize: '16px',
+        fill: '#393743',
+        fontFamily: 'monospace',
+        align: 'center'
+    }).setOrigin(0.5);
+
+    scene.tweens.add({
+        targets: yum,
+        y: yum.y - 50,
+        alpha: 0,
+        duration: 1000,
+        ease: 'Sine.easeOut',
+        onComplete: () => yum.destroy()
+    });
 
 
 }
 
+//viisas kissa kertoo affirmaatioita
+function listenToTheCat() {
+    //jos hahmo koskee esineen sivuja ja aiempi quote ei ole näkyvillä
+    if ((entity.body.touching.left || entity.body.touching.right) && !isQuoteActive) {
+        isQuoteActive = true; //quote on näkyvillä (uusi quote ei voi tulla päälle)
+
+        const scene = game.scene.scenes[0];
+
+        //haetaan random quote json filestä
+        const quotes = scene.cache.json.get('quotes');
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        const randomQuote = quotes[randomIndex];
+
+        //quoten näyttäminen
+        const showQuote = scene.add.text(70, 260, randomQuote, {
+            fontSize: '16px',
+            fill: '#393743',
+            fontFamily: 'monospace',
+            align: 'center'
+        }).setOrigin(0);
+
+        scene.tweens.add({
+            targets: showQuote,
+            alpha: 0,
+            duration: 7000,
+            ease: 'Sine.easeOut',
+            onComplete: () => {
+                showQuote.destroy();
+                isQuoteActive = false; // Sallitaan uuden quoten näyttäminen
+            }
+        });
+
+
+        points += 10; //lisätäään pisteitä
+        infoText.setText("Mindfulness points: " + points + "  Entity's name: " + entityName);
+        localStorage.setItem("points", points); //tallennetaan pisteet localStorageen
+    }
+}
+
+
 //mindversum-koneen käyttö
 function useMindversum() {
 
+    //jos hahmo koskee esineen sivuja
     if (entity.body.touching.left || entity.body.touching.right) {
     //näytetään mindversum-koneen elementit
     document.getElementById("mindversumInfo").style.display = "block";
 
+    //task käynnissä
     ongoingTask = true; 
     }
 
@@ -444,6 +537,7 @@ const scene = game.scene.scenes[0];
     }
 });
 
+//task päättyy
 ongoingTask = false; 
 
 }
@@ -477,7 +571,7 @@ function closeMindversum() {
 function generateName() {
 
     const scene = game.scene.scenes[0];
-    //haetaan nimet
+    //haetaan nimet json filestä
     const names = scene.cache.json.get('names');
     //arvotaan nimi    
     entityName = names[Math.floor(Math.random() * names.length)];
@@ -491,12 +585,15 @@ function generateName() {
 
 function update ()
 {
+    //jos task on käynnissä
     if (ongoingTask) {
         entity.setVelocityX(0); //pysäytetään hahmon liike
         entity.anims.play('turn'); //asetetaan hahmo paikalleen
         return; 
     }
 
+    //nuolinäppäinten toiminta
+    
     if (cursors.left.isDown)
     {
         entity.setVelocityX(-160);
