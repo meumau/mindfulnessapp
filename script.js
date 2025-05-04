@@ -17,7 +17,6 @@ let config = {
 };
 
 
-
 //muuttujat
 
 let game = new Phaser.Game(config);
@@ -27,6 +26,7 @@ let entity;
 let entityName;
 
 //peli hakee pisteet localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
+let points;
 localStorage.getItem("points") ? points = parseInt(localStorage.getItem("points"), 10) : points = 0;
 
 //info teksti
@@ -36,6 +36,8 @@ let infoText;
 let mindversumText;
 
 //peli hakee mindversum-pisteet ja entityjen määrän localStoragesta, jos niitä ei löydy, asetetaan ne nollaksi
+let mindversumPoints;
+let entityCount;
 localStorage.getItem("mindversumPoints") ? mindversumPoints = parseInt(localStorage.getItem("mindversumPoints"), 10) : mindversumPoints = 0;
 localStorage.getItem("entityCount") ? entityCount = parseInt(localStorage.getItem("entityCount"), 10) : entityCount = 0;    
 
@@ -158,6 +160,10 @@ function create ()
 
     cursors = this.input.keyboard.createCursorKeys();
 
+    //hahmon tiedot
+
+    infoText = this.add.text(16, 437, 'Mindfulness points: ' + points + "  Entity's name: " + entityName, { fontSize: '16px', fill: '#f0e2f9', fontFamily: 'monospace' });
+
     //infolaatikon piilotus napilla
     document.getElementById("ok").addEventListener("click", function() {
         document.getElementById("infoBox").style.display = "none";
@@ -224,10 +230,6 @@ function create ()
 
     document.getElementById("yes").addEventListener("click", goToMindversum);
     document.getElementById("no").addEventListener("click", closeMindversum);
-
-    //hahmon tiedot
-
-    infoText = this.add.text(16, 437, 'Mindfulness points: ' + points + "  Entity's name: " + entityName, { fontSize: '16px', fill: '#f0e2f9', fontFamily: 'monospace' });
 
     //mindversumin tiedot
 
@@ -418,7 +420,7 @@ function useFridge() {
 }
 
 
-//valintanappien poistuminen näkyvistä
+//jääkaapin valintanappien poistuminen näkyvistä
 function closeFridge() {
 
     points += 10; //lisätään mindfulness-pisteitä
@@ -593,7 +595,7 @@ function update ()
     }
 
     //nuolinäppäinten toiminta
-    
+
     if (cursors.left.isDown)
     {
         entity.setVelocityX(-160);
